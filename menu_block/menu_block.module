@@ -1,0 +1,97 @@
+<?php
+
+function menu_block_block_info()
+{
+    return array(
+
+        'mymenu_block' => array(
+            'info' => t('Add menu block'),
+            'status' => 1,
+            'region' => 'sidebar_first',
+
+            'visibility' => BLOCK_VISIBILITY_NOTLISTED,
+        ),
+    );
+}
+
+/**
+ * create block with menu
+ * @param string $delta
+ * @return array
+ */
+function menu_block_block_view($delta = '')
+{
+    $block = array();
+    switch ($delta) {
+        case 'mymenu_block':
+            $block['subject'] = t('Menu');
+            $block['content'] = menu_block_content();
+
+            break;
+    }
+    return $block;
+}
+
+/***
+ *
+ * content of menu block
+ */
+function menu_block_content()
+{
+
+
+
+    $menulinks = menu_tree_all_data(variable_get('node_mymenu', 'main-menu'));
+    $links = array();
+    foreach ($menulinks as $link)
+        $links[] = array('title' => $link['link']['link_title'],
+            'href' => $link['link']['link_path']
+        );
+
+    $output = '';
+    foreach ($links as $link) {
+        $output .= '<br>' . l($link['title'], $link['href'], $link);
+    }
+
+    return $output;
+}
+
+/***
+ *
+ * choose menu to display in configure page
+ * @param string $delta
+ * @return array
+ */
+function menu_block_block_configure($delta = '')
+{
+
+    $form = array();
+    //  dsm( menu_get_menus(TRUE));
+    if ($delta == 'mymenu_block') {
+        $menus = menu_get_menus(TRUE);
+        $menuarr = array();
+        foreach ($menus as $k => $v)
+            $menuarr[] = $k;
+
+        $form['node_mymenu'] = array(
+            '#type' => 'select',
+            '#title' => t('Menu to display in block'),
+            '#default_value' => variable_get('node_mymenu', 'main-menu'),
+            '#options' => drupal_map_assoc($menuarr),
+        );
+    }
+    return $form;
+}
+
+/***
+ *save configure
+ * @param string $delta
+ * @param array $edit
+ */
+function menu_block_block_save($delta = '', $edit = array())
+{
+
+    if ($delta == 'mymenu_block') {
+        variable_set('node_mymenu', $edit['node_mymenu']);
+    }
+}
